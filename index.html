@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minz Racer - Ultimate Racing</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* Login Screen */
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        #loginScreen.hidden {
+            display: none;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+         .game-title {
+            font-weight: bold;
+            font-size: 48px;
+            -webkit-background-clip: text;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+       }
+
+        .game-subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0 10px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .welcome-back {
+            color: #667eea;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 1000;
+        }
+
+        .hud-item {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(102, 126, 234, 0.5);
+        }
+
+        #playerName {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Speed Meter */
+        #speedMeter {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 5px solid #667eea;
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+
+        #speedValue {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        #speedLabel {
+            font-size: 14px;
+            color: white;
+        }
+
+        /* Controls */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(102, 126, 234, 0.5);
+        }
+
+        /* Game Over */
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            z-index: 2000;
+        }
+
+        #gameOver.show {
+            display: block;
+        }
+
+        #gameOver h1 {
+            color: #ff4444;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        #gameOver p {
+            color: white;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .restart-btn {
+            padding: 15px 40px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginScreen">
+        <div class="login-container">
+            <h1 class="game-title">MINZ RACER</h1>
+            <p class="game-subtitle">Ultimate Racing Experience</p>
+            <input type="text" id="usernameInput" class="login-input" placeholder="Enter your username" maxlength="20">
+            <button onclick="handleLogin()" class="login-btn">START RACING</button>
+            <p class="welcome-back" id="welcomeBack"></p>
+        </div>
+    </div>
+
+    <div id="hud">
+        <div id="playerName" class="hud-item"></div>
+        <div class="hud-item">SCORE: <span id="score">0</span></div>
+        <div class="hud-item">HIGH SCORE: <span id="highScore">0</span></div>
+        <div class="hud-item">LEVEL: <span id="level">1</span></div>
+    </div>
+
+    <div id="speedMeter">
+        <div id="speedValue">0</div>
+        <div id="speedLabel">KM/H</div>
+    </div>
+
+    <div id="controls">
+        <div>⬆️ W / ↑ - Accelerate</div>
+        <div>⬇️ S / ↓ - Brake</div>
+        <div>⬅️ A / ← - Turn Left</div>
+        <div>➡️ D / → - Turn Right</div>
+    </div>
+
+    <div id="gameOver">
+        <h1>GAME OVER!</h1>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <p id="highScoreText"></p>
+        <button onclick="resetGame()" class="restart-btn">RACE AGAIN</button>
+    </div>
+
+    <script>
+        let scene, camera, renderer;
+        let car, wheels = [];
+        let playerData = { username: '', highScore: 0, totalRaces: 0 };
+        let gameState = {
+            keys: {},
+            speed: 0,
+            maxSpeed: 2.0,
+            carX: 0,
+            obstacles: [],
+            buildings: [],
+            roadLines: [],
+            gameOver: false,
+            score: 0,
+            level: 1
+        };
+
+        function handleLogin() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Please enter a username!');
+                return;
+            }
+            playerData.username = username;
+            loadPlayerData();
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('playerName').textContent = `👤 ${username}`;
+            document.getElementById('highScore').textContent = playerData.highScore;
+            init();
+        }
+
+        function loadPlayerData() {
+            try {
+                const saved = localStorage.getItem('minzRacer_' + playerData.username);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    playerData.highScore = data.highScore || 0;
+                    playerData.totalRaces = data.totalRaces || 0;
+                }
+            } catch (e) {}
+        }
+
+        function savePlayerData() {
+            try {
+                localStorage.setItem('minzRacer_' + playerData.username, JSON.stringify({
+                    highScore: playerData.highScore,
+                    totalRaces: playerData.totalRaces
+                }));
+            } catch (e) {}
+        }
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb);
+            scene.fog = new THREE.Fog(0x87ceeb, 10, 200);
+
+            // Camera - proper racing view
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+            camera.position.set(0, 5, 12);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+
+            const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+            sun.position.set(20, 40, 20);
+            sun.castShadow = true;
+            sun.shadow.camera.left = -30;
+            sun.shadow.camera.right = 30;
+            sun.shadow.camera.top = 30;
+            sun.shadow.camera.bottom = -30;
+            scene.add(sun);
+
+            createRoad();
+            createCar();
+            createBuildings();
+            spawnObstacles();
+
+            window.addEventListener('keydown', e => gameState.keys[e.key.toLowerCase()] = true);
+            window.addEventListener('keyup', e => gameState.keys[e.key.toLowerCase()] = false);
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animate();
+        }
+
+        function createRoad() {
+            // Main road
+            const road = new THREE.Mesh(
+                new THREE.PlaneGeometry(12, 500),
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+            );
+            road.rotation.x = -Math.PI / 2;
+            road.receiveShadow = true;
+            scene.add(road);
+
+            // Center lines
+            for (let i = -50; i < 50; i++) {
+                const line = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.3, 0.1, 3),
+                    new THREE.MeshBasicMaterial({ color: 0xffff00 })
+                );
+                line.position.set(0, 0.06, i * 10);
+                scene.add(line);
+                gameState.roadLines.push(line);
+            }
+
+            // Edge lines
+            [-6, 6].forEach(x => {
+                for (let i = -50; i < 50; i++) {
+                    const edge = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.4, 0.1, 2),
+                        new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0xff0000 : 0xffffff })
+                    );
+                    edge.position.set(x, 0.06, i * 5);
+                    scene.add(edge);
+                    gameState.roadLines.push(edge);
+                }
+            });
+
+            // Sidewalks
+            [-8, 8].forEach(x => {
+                const sidewalk = new THREE.Mesh(
+                    new THREE.PlaneGeometry(3, 500),
+                    new THREE.MeshStandardMaterial({ color: 0x666666 })
+                );
+                sidewalk.rotation.x = -Math.PI / 2;
+                sidewalk.position.set(x, 0.01, 0);
+                scene.add(sidewalk);
+            });
+        }
+
+        function createCar() {
+            const carGroup = new THREE.Group();
+
+            // Body
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 1, 4),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0xff0000,
+                    metalness: 0.8,
+                    roughness: 0.2
+                })
+            );
+            body.position.y = 0.5;
+            body.castShadow = true;
+            carGroup.add(body);
+
+            // Roof
+            const roof = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8, 0.8, 2.2),
+                new THREE.MeshStandardMaterial({ color: 0xcc0000, metalness: 0.7, roughness: 0.3 })
+            );
+            roof.position.set(0, 1.3, -0.2);
+            roof.castShadow = true;
+            carGroup.add(roof);
+
+            // Windshield
+            const windshield = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.7, 0.7),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0x4488ff,
+                    transparent: true,
+                    opacity: 0.6
+                })
+            );
+            windshield.position.set(0, 1.3, 1);
+            windshield.rotation.x = -0.2;
+            carGroup.add(windshield);
+
+            // Wheels
+            [[- 1, 1.3], [1, 1.3], [-1, -1.3], [1, -1.3]].forEach(([x, z]) => {
+                const wheel = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16),
+                    new THREE.MeshStandardMaterial({ color: 0x111111 })
+                );
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(x, 0.4, z);
+                wheel.castShadow = true;
+                carGroup.add(wheel);
+                wheels.push(wheel);
+            });
+
+            // Headlights
+            [-0.6, 0.6].forEach(x => {
+                const light = new THREE.Mesh(
+                    new THREE.CircleGeometry(0.15),
+                    new THREE.MeshBasicMaterial({ color: 0xffffcc })
+                );
+                light.position.set(x, 0.6, 2.01);
+                carGroup.add(light);
+
+                const spotlight = new THREE.SpotLight(0xffffcc, 2, 30, Math.PI / 6);
+                spotlight.position.set(x, 0.6, 2.5);
+                spotlight.castShadow = true;
+                carGroup.add(spotlight);
+            });
+
+            carGroup.position.set(0, 0, 5);
+            scene.add(carGroup);
+            car = carGroup;
+        }
+
+        function createBuildings() {
+            for (let i = 0; i < 40; i++) {
+                [-1, 1].forEach(side => {
+                    const height = 10 + Math.random() * 25;
+                    const width = 4 + Math.random() * 4;
+                    const depth = 6 + Math.random() * 6;
+                    
+                    const building = new THREE.Mesh(
+                        new THREE.BoxGeometry(width, height, depth),
+                        new THREE.MeshStandardMaterial({ 
+                            color: new THREE.Color().setHSL(0.6, 0.2, 0.4 + Math.random() * 0.2)
+                        })
+                    );
+                    building.position.set(
+                        side * (12 + Math.random() * 4),
+                        height / 2,
+                        -200 + i * 12
+                    );
+                    building.castShadow = true;
+                    building.receiveShadow = true;
+                    scene.add(building);
+                    gameState.buildings.push(building);
+
+                    // Windows
+                    for (let h = 2; h < height; h += 3) {
+                        for (let w = 0; w < 3; w++) {
+                            const window = new THREE.Mesh(
+                                new THREE.PlaneGeometry(0.6, 1.2),
+                                new THREE.MeshBasicMaterial({ 
+                                    color: Math.random() > 0.3 ? 0xffff99 : 0x333333 
+                                })
+                            );
+                            window.position.set(
+                                building.position.x + (side > 0 ? -width/2 - 0.01 : width/2 + 0.01),
+                                building.position.y - height/2 + h,
+                                building.position.z + (w - 1) * 1.5
+                            );
+                            window.rotation.y = side > 0 ? Math.PI/2 : -Math.PI/2;
+                            scene.add(window);
+                        }
+                    }
+                });
+            }
+        }
+
+        function spawnObstacles() {
+            for (let i = 0; i < 6; i++) {
+                createObstacle(-30 - i * 25);
+            }
+        }
+
+        function createObstacle(z) {
+            const colors = [0x2196f3, 0x4caf50, 0xffeb3b, 0xff5722, 0x9c27b0];
+            const obstacleGroup = new THREE.Group();
+            
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 1, 4),
+                new THREE.MeshStandardMaterial({ 
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    metalness: 0.7,
+                    roughness: 0.3
+                })
+            );
+            body.position.y = 0.5;
+            body.castShadow = true;
+            obstacleGroup.add(body);
+
+            const roof = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8, 0.7, 2),
+                new THREE.MeshStandardMaterial({ color: 0x444444 })
+            );
+            roof.position.set(0, 1.2, -0.3);
+            roof.castShadow = true;
+            obstacleGroup.add(roof);
+
+            const lane = (Math.floor(Math.random() * 3) - 1) * 3.5;
+            obstacleGroup.position.set(lane, 0, z);
+            scene.add(obstacleGroup);
+            gameState.obstacles.push(obstacleGroup);
+        }
+
+        function resetGame() {
+            gameState.gameOver = false;
+            gameState.speed = 0;
+            gameState.score = 0;
+            gameState.level = 1;
+            gameState.carX = 0;
+            car.position.x = 0;
+            
+            playerData.totalRaces++;
+            savePlayerData();
+            
+            document.getElementById('score').textContent = '0';
+            document.getElementById('level').textContent = '1';
+            document.getElementById('speedValue').textContent = '0';
+            document.getElementById('gameOver').classList.remove('show');
+            
+            gameState.obstacles.forEach(obs => {
+                const lane = (Math.floor(Math.random() * 3) - 1) * 3.5;
+                obs.position.x = lane;
+                obs.position.z = -30 - Math.random() * 150;
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameState.gameOver) {
+                renderer.render(scene, camera);
+                return;
+            }
+
+            // Controls
+            if (gameState.keys['w'] || gameState.keys['arrowup']) {
+                gameState.speed = Math.min(gameState.speed + 0.02, gameState.maxSpeed);
+            } else if (gameState.keys['s'] || gameState.keys['arrowdown']) {
+                gameState.speed = Math.max(gameState.speed - 0.05, 0);
+            } else {
+                gameState.speed = Math.max(gameState.speed - 0.01, 0);
+            }
+
+            if (gameState.keys['a'] || gameState.keys['arrowleft']) {
+                gameState.carX = Math.max(gameState.carX - 0.15, -3.5);
+            }
+            if (gameState.keys['d'] || gameState.keys['arrowright']) {
+                gameState.carX = Math.min(gameState.carX + 0.15, 3.5);
+            }
+
+            car.position.x = gameState.carX;
+
+            // Rotate wheels
+            wheels.forEach(w => w.rotation.x -= gameState.speed * 0.5);
+
+            // Move road lines
+            gameState.roadLines.forEach(line => {
+                line.position.z += gameState.speed;
+                if (line.position.z > 50) line.position.z -= 100;
+            });
+
+            // Move buildings
+            gameState.buildings.forEach(b => {
+                b.position.z += gameState.speed;
+                if (b.position.z > 50) b.position.z -= 500;
+            });
+
+            // Move obstacles
+            gameState.obstacles.forEach(obs => {
+                obs.position.z += gameState.speed + 0.5;
+                
+                if (obs.position.z > 20) {
+                    obs.position.z = -150;
+                    const lane = (Math.floor(Math.random() * 3) - 1) * 3.5;
+                    obs.position.x = lane;
+                    
+                    gameState.score += 10;
+                    document.getElementById('score').textContent = gameState.score;
+                    
+                    if (gameState.score % 100 === 0) {
+                        gameState.level++;
+                        gameState.maxSpeed = Math.min(gameState.maxSpeed + 0.15, 3);
+                        document.getElementById('level').textContent = gameState.level;
+                    }
+                    
+                    if (gameState.score > playerData.highScore) {
+                        playerData.highScore = gameState.score;
+                        document.getElementById('highScore').textContent = playerData.highScore;
+                        savePlayerData();
+                    }
+                }
+
+                // Collision
+                const dx = car.position.x - obs.position.x;
+                const dz = car.position.z - obs.position.z;
+                if (Math.sqrt(dx * dx + dz * dz) < 3) {
+                    gameState.gameOver = true;
+                    document.getElementById('finalScore').textContent = gameState.score;
+                    document.getElementById('highScoreText').textContent = 
+                        gameState.score >= playerData.highScore ? '🏆 NEW HIGH SCORE! 🏆' : 'High Score: ' + playerData.highScore;
+                    document.getElementById('gameOver').classList.add('show');
+                }
+            });
+
+            // Update HUD
+            document.getElementById('speedValue').textContent = Math.round(gameState.speed * 100);
+            
+            // Camera follow
+            camera.position.x += (car.position.x - camera.position.x) * 0.1;
+            camera.position.z = car.position.z + 12;
+            camera.lookAt(car.position.x, car.position.y + 1, car.position.z - 10);
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
