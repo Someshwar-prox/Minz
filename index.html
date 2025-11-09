@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minz Racer - Ultimate Racing</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="shortcut icon" href="assets/logo.png" type="image/x-png">
     <style>
         * {
             margin: 0;
@@ -46,15 +47,14 @@
             width: 90%;
         }
 
-         .game-title {
-            font-weight: bold;
+        .game-title {
             font-size: 48px;
-            -webkit-background-clip: text;
+            font-weight: bold;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-clip: text; 
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
-       }
+        }
 
         .game-subtitle {
             color: #666;
@@ -103,18 +103,18 @@
         /* HUD */
         #hud {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 10px;
+            left: 10px;
             color: white;
             z-index: 1000;
         }
 
         .hud-item {
             background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
+            padding: 8px 15px;
             margin: 5px 0;
-            border-radius: 10px;
-            font-size: 20px;
+            border-radius: 8px;
+            font-size: 16px;
             font-weight: bold;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(102, 126, 234, 0.5);
@@ -127,28 +127,28 @@
         /* Speed Meter */
         #speedMeter {
             position: absolute;
-            bottom: 30px;
-            right: 30px;
-            width: 150px;
-            height: 150px;
+            bottom: 20px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
             background: rgba(0, 0, 0, 0.8);
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            border: 5px solid #667eea;
-            box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+            border: 4px solid #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
         }
 
         #speedValue {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: bold;
             color: #667eea;
         }
 
         #speedLabel {
-            font-size: 14px;
+            font-size: 12px;
             color: white;
         }
 
@@ -158,12 +158,180 @@
             bottom: 20px;
             left: 20px;
             color: white;
-            font-size: 14px;
+            font-size: 12px;
             background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 10px;
+            border-radius: 8px;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(102, 126, 234, 0.5);
+            display: none;
+        }
+
+        /* Mobile Touch Controls */
+        #mobileControls {
+            position: absolute;
+            bottom: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        #mobileControls.show {
+            display: flex;
+        }
+
+        .control-btn {
+            background: rgba(102, 126, 234, 0.7);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn:active {
+            background: rgba(102, 126, 234, 0.9);
+            transform: scale(0.95);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        #accelerateBtn {
+            width: 80px;
+            height: 80px;
+            font-size: 32px;
+            background: rgba(76, 175, 80, 0.7);
+        }
+
+        #accelerateBtn:active {
+            background: rgba(76, 175, 80, 0.9);
+        }
+
+        #brakeBtn {
+            width: 80px;
+            height: 80px;
+            font-size: 32px;
+            background: rgba(244, 67, 54, 0.7);
+        }
+
+        #brakeBtn:active {
+            background: rgba(244, 67, 54, 0.9);
+        }
+
+        /* Desktop keyboard controls indicator */
+        @media (min-width: 769px) {
+            #controls {
+                display: block;
+            }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .hud-item {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+
+            #speedMeter {
+                width: 100px;
+                height: 100px;
+                bottom: 15px;
+                right: 15px;
+            }
+
+            #speedValue {
+                font-size: 30px;
+            }
+
+            #speedLabel {
+                font-size: 10px;
+            }
+
+            .game-title {
+                font-size: 36px;
+            }
+
+            .login-container {
+                padding: 30px 25px;
+            }
+
+            #gameOver {
+                padding: 30px 20px;
+                width: 90%;
+            }
+
+            #gameOver h1 {
+                font-size: 32px;
+            }
+
+            #gameOver p {
+                font-size: 18px;
+            }
+
+            .restart-btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #hud {
+                top: 5px;
+                left: 5px;
+            }
+
+            .hud-item {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+
+            #speedMeter {
+                width: 80px;
+                height: 80px;
+                bottom: 10px;
+                right: 10px;
+                border: 3px solid #667eea;
+            }
+
+            #speedValue {
+                font-size: 24px;
+            }
+
+            .control-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+
+            #accelerateBtn, #brakeBtn {
+                width: 70px;
+                height: 70px;
+                font-size: 28px;
+            }
+
+            #mobileControls {
+                bottom: 120px;
+                gap: 10px;
+            }
+
+            .control-row {
+                gap: 10px;
+            }
         }
 
         /* Game Over */
