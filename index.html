@@ -407,6 +407,20 @@
         <div>➡️ D / → - Turn Right</div>
     </div>
 
+    <!-- Mobile Touch Controls -->
+    <div id="mobileControls">
+        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+            <div class="control-row">
+                <div id="accelerateBtn" class="control-btn">⬆️</div>
+            </div>
+            <div class="control-row">
+                <div id="leftBtn" class="control-btn">⬅️</div>
+                <div id="brakeBtn" class="control-btn">⬇️</div>
+                <div id="rightBtn" class="control-btn">➡️</div>
+            </div>
+        </div>
+    </div>
+
     <div id="gameOver">
         <h1>GAME OVER!</h1>
         <p>Final Score: <span id="finalScore">0</span></p>
@@ -417,6 +431,7 @@
     <script>
         let scene, camera, renderer;
         let car, wheels = [];
+        let bgmAudio, crashAudio;
         let playerData = { username: '', highScore: 0, totalRaces: 0 };
         let gameState = {
             keys: {},
@@ -466,6 +481,19 @@
         }
 
         function init() {
+            // Initialize audio
+            bgmAudio = new Audio('assets/bgm.mp3');
+            bgmAudio.loop = true;
+            bgmAudio.volume = 0.5;
+            
+            crashAudio = new Audio('assets/crash.mp3');
+            crashAudio.volume = 0.7;
+            
+            // Start background music
+            bgmAudio.play().catch(e => {
+                console.log('Audio autoplay blocked. Will start on user interaction.');
+            });
+
             // Scene
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87ceeb);
@@ -506,6 +534,64 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
+
+            // Mobile touch controls
+            setupMobileControls();
+
+            animate();
+        }
+
+        function setupMobileControls() {
+            // Detect mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                          || window.innerWidth <= 768;
+            
+            if (isMobile) {
+                document.getElementById('mobileControls').classList.add('show');
+            }
+
+            // Touch control handlers
+            const touchStart = (key) => {
+                return (e) => {
+                    e.preventDefault();
+                    gameState.keys[key] = true;
+                };
+            };
+
+            const touchEnd = (key) => {
+                return (e) => {
+                    e.preventDefault();
+                    gameState.keys[key] = false;
+                };
+            };
+
+            // Accelerate button
+            const accelBtn = document.getElementById('accelerateBtn');
+            accelBtn.addEventListener('touchstart', touchStart('w'), { passive: false });
+            accelBtn.addEventListener('touchend', touchEnd('w'), { passive: false });
+            accelBtn.addEventListener('mousedown', touchStart('w'));
+            accelBtn.addEventListener('mouseup', touchEnd('w'));
+
+            // Brake button
+            const brakeBtn = document.getElementById('brakeBtn');
+            brakeBtn.addEventListener('touchstart', touchStart('s'), { passive: false });
+            brakeBtn.addEventListener('touchend', touchEnd('s'), { passive: false });
+            brakeBtn.addEventListener('mousedown', touchStart('s'));
+            brakeBtn.addEventListener('mouseup', touchEnd('s'));
+
+            // Left button
+            const leftBtn = document.getElementById('leftBtn');
+            leftBtn.addEventListener('touchstart', touchStart('a'), { passive: false });
+            leftBtn.addEventListener('touchend', touchEnd('a'), { passive: false });
+            leftBtn.addEventListener('mousedown', touchStart('a'));
+            leftBtn.addEventListener('mouseup', touchEnd('a'));
+
+            // Right button
+            const rightBtn = document.getElementById('rightBtn');
+            rightBtn.addEventListener('touchstart', touchStart('d'), { passive: false });
+            rightBtn.addEventListener('touchend', touchEnd('d'), { passive: false });
+            rightBtn.addEventListener('mousedown', touchStart('d'));
+            rightBtn.addEventListener('mouseup', touchEnd('d'));
 
             animate();
         }
